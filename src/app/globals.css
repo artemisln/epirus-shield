@@ -1,19 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #1e293b;
+  --background: #ffffff;
+  --foreground: #222222;
   --primary: #243B72;
   --primary-foreground: #ffffff;
   --secondary: #bb1616;
   --secondary-foreground: #ffffff;
-  --muted: #64748b;
-  --muted-foreground: #94a3b8;
+  --muted: #717171;
+  --muted-light: #dddddd;
   --surface: #ffffff;
-  --surface-elevated: #f1f5f9;
-  --border: #e2e8f0;
-  --success: #16a34a;
-  --warning: #ca8a04;
+  --surface-elevated: #f7f7f7;
+  --border: #ebebeb;
+  --success: #008a05;
+  --warning: #b45309;
+  --error: #c13515;
 }
 
 @theme inline {
@@ -24,12 +25,13 @@
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  --color-muted-light: var(--muted-light);
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
   --color-border: var(--border);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-error: var(--error);
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
   --radius-sm: 0.5rem;
@@ -37,16 +39,6 @@
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
   --radius-full: 9999px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f1f5f9;
-    --surface: #1e293b;
-    --surface-elevated: #334155;
-    --border: #334155;
-  }
 }
 
 * {
@@ -67,4 +59,44 @@ select:focus,
 textarea:focus {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--muted-light);
+  border-radius: 9999px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: var(--foreground);
+  border-radius: 50%;
+  margin-top: -10px;
+  border: 2px solid var(--background);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: var(--muted-light);
+  border-radius: 9999px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: var(--foreground);
+  border-radius: 50%;
+  border: 2px solid var(--background);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
