@@ -1,0 +1,61 @@
+/* Epirus Shield - Badge Styles */
+/* Uses Epirus Bank brand colors */
+
+.epirus-shield-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin-left: 8px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.epirus-shield-badge svg {
+  flex-shrink: 0;
+}
+
+/* Verified badge - Epirus Bank primary color */
+.epirus-shield-verified {
+  background-color: rgba(36, 59, 114, 0.1);
+  color: #243B72;
+}
+
+.epirus-shield-verified svg {
+  color: #243B72;
+}
+
+/* Warning badge - Epirus Bank secondary/alert color */
+.epirus-shield-warning {
+  background-color: rgba(187, 22, 22, 0.1);
+  color: #bb1616;
+}
+
+.epirus-shield-warning svg {
+  color: #bb1616;
+}
+
+/* Hover states */
+.epirus-shield-badge:hover {
+  opacity: 0.9;
+}
+
+/* Animation for new badges */
+@keyframes epirus-shield-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.epirus-shield-badge {
+  animation: epirus-shield-fade-in 0.2s ease-out;
+}

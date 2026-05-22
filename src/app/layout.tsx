@@ -9,8 +9,8 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Δάνειο σε 5 Λεπτά | Epirus Bank",
-  description: "Υποβάλετε αίτηση δανείου γρήγορα και εύκολα με τη βοήθεια τεχνητής νοημοσύνης",
+  title: "Epirus Shield | Προστασία από Απάτες",
+  description: "Προστατευτείτε από κλήσεις και emails που προσποιούνται την τράπεζα",
 };
 
 export const viewport: Viewport = {

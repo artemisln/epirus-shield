@@ -1,0 +1,1 @@
+export { VerificationRepository } from "./InMemoryVerificationRepo";
