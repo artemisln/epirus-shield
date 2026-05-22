@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react";
 import { WizardShell } from "@/app/components/wizard";
 import { StepTransition } from "@/app/components/wizard";
-import { Button } from "@/app/components/ui";
 import {
   WelcomeStep,
   LoanAmountStep,
@@ -53,6 +52,7 @@ export default function ApplyPage() {
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [explanation, setExplanation] = useState<string>("");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [hasRequiredDocs, setHasRequiredDocs] = useState(false);
 
   const currentStepId = WIZARD_STEPS[currentStep].id;
   const showProgress = currentStep < USER_DECISION_STEPS;
@@ -65,10 +65,9 @@ export default function ApplyPage() {
     setCurrentStep((s) => Math.max(s - 1, 0));
   }, []);
 
-  const handleAmountNext = useCallback((amount: number) => {
+  const handleAmountChange = useCallback((amount: number) => {
     setLoanAmount(amount);
-    handleNext();
-  }, [handleNext]);
+  }, []);
 
   const handleTermSelect = useCallback((term: number) => {
     setLoanTerm(term);
@@ -86,8 +85,12 @@ export default function ApplyPage() {
     handleNext();
   }, [handleNext, loanAmount, loanTerm]);
 
-  const handleDocumentsSubmit = useCallback(async (files: UploadedFile[]) => {
+  const handleFilesChange = useCallback((files: UploadedFile[], hasRequired: boolean) => {
     setUploadedFiles(files);
+    setHasRequiredDocs(hasRequired);
+  }, []);
+
+  const handleDocumentsSubmit = useCallback(async () => {
     setApplication((app) =>
       updateLoanApplication(app, { status: ApplicationStatus.DOCUMENTS_UPLOADED })
     );
@@ -217,22 +220,38 @@ export default function ApplyPage() {
     setAssessment(null);
     setExplanation("");
     setUploadedFiles([]);
+    setHasRequiredDocs(false);
   }, []);
 
   const handleContact = useCallback(() => {
     alert("Ένας σύμβουλος θα επικοινωνήσει μαζί σας σύντομα.");
   }, []);
 
-  const renderFooter = () => {
-    if (currentStepId === "term" || currentStepId === "purpose") {
-      return null;
+  const getPrimaryAction = () => {
+    switch (currentStepId) {
+      case "welcome":
+        return { label: "Ξεκινήστε", onClick: handleNext };
+      case "amount":
+        return { label: "Συνέχεια", onClick: handleNext };
+      case "term":
+      case "purpose":
+        return undefined;
+      case "documents":
+        return { label: "Υποβολή", onClick: handleDocumentsSubmit, disabled: !hasRequiredDocs };
+      case "processing":
+        return undefined;
+      case "result":
+        return { label: "Επικοινωνία", onClick: handleContact };
+      default:
+        return undefined;
     }
+  };
 
-    if (currentStepId === "processing" || currentStepId === "result") {
-      return null;
+  const getSecondaryAction = () => {
+    if (currentStepId === "result") {
+      return { label: "Κλείσιμο", onClick: handleClose };
     }
-
-    return null;
+    return undefined;
   };
 
   return (
@@ -242,7 +261,8 @@ export default function ApplyPage() {
       showProgress={showProgress}
       onBack={handleBack}
       showBackButton={currentStep > 0 && currentStep < WIZARD_STEPS.length - 2}
-      footer={renderFooter()}
+      primaryAction={getPrimaryAction()}
+      secondaryAction={getSecondaryAction()}
     >
       <StepTransition stepKey={currentStep}>
         {currentStepId === "welcome" && <WelcomeStep onNext={handleNext} />}
@@ -250,7 +270,7 @@ export default function ApplyPage() {
         {currentStepId === "amount" && (
           <LoanAmountStep
             initialAmount={loanAmount}
-            onNext={handleAmountNext}
+            onAmountChange={handleAmountChange}
           />
         )}
 
@@ -268,7 +288,7 @@ export default function ApplyPage() {
 
         {currentStepId === "documents" && (
           <DocumentUploadStep
-            onNext={handleDocumentsSubmit}
+            onFilesChange={handleFilesChange}
             onUseSampleData={handleUseSampleData}
           />
         )}
@@ -281,8 +301,6 @@ export default function ApplyPage() {
           <ResultStep
             assessment={assessment}
             explanation={explanation}
-            onClose={handleClose}
-            onContact={handleContact}
           />
         )}
       </StepTransition>

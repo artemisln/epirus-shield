@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Icon } from "@/app/components/ui";
+import { Icon } from "@/app/components/ui";
 import type { IconName } from "@/app/components/ui";
 import {
   Assessment,
@@ -12,8 +12,6 @@ import {
 interface ResultStepProps {
   assessment: Assessment;
   explanation: string;
-  onClose: () => void;
-  onContact: () => void;
 }
 
 const DECISION_CONFIG: Record<Decision, { bgClass: string; textClass: string; icon: IconName }> = {
@@ -67,53 +65,42 @@ function getShortExplanation(decision: Decision): string {
   }
 }
 
-export function ResultStep({ assessment, onClose, onContact }: ResultStepProps) {
+export function ResultStep({ assessment }: ResultStepProps) {
   const config = DECISION_CONFIG[assessment.decision];
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1">
-        <div className="flex justify-center mb-4">
-          <Icon name={config.icon} size={120} />
-        </div>
+      <div className="flex justify-center mb-4">
+        <Icon name={config.icon} size={120} />
+      </div>
 
-        <div className={`rounded-2xl p-6 mb-6 ${config.bgClass}`}>
-          <h1 className={`text-2xl font-bold text-center ${config.textClass}`}>
-            {DecisionLabels[assessment.decision]}
-          </h1>
-          <p className="text-sm text-muted mt-2 text-center">
-            {getShortExplanation(assessment.decision)}
-          </p>
-        </div>
-
-        <div className="space-y-3 mb-6">
-          {assessment.factors.map((factor, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-3 p-3 rounded-xl border border-border"
-            >
-              {getFactorIcon(factor.impact)}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground">{factor.name}</p>
-              </div>
-              <p className="text-sm font-medium text-foreground">{factor.value}</p>
-            </div>
-          ))}
-        </div>
-
-        <p className="text-xs text-muted text-center">
-          Η τελική απόφαση λαμβάνεται από εξουσιοδοτημένο στέλεχος.
+      <div className={`rounded-2xl p-6 mb-6 ${config.bgClass}`}>
+        <h1 className={`text-2xl font-bold text-center ${config.textClass}`}>
+          {DecisionLabels[assessment.decision]}
+        </h1>
+        <p className="text-sm text-muted mt-2 text-center">
+          {getShortExplanation(assessment.decision)}
         </p>
       </div>
 
-      <div className="flex justify-between pt-4">
-        <Button variant="ghost" onClick={onClose}>
-          Κλείσιμο
-        </Button>
-        <Button onClick={onContact} size="lg">
-          Επικοινωνία
-        </Button>
+      <div className="space-y-3 mb-6">
+        {assessment.factors.map((factor, index) => (
+          <div
+            key={index}
+            className="flex items-center gap-3 p-3 rounded-xl border border-border"
+          >
+            {getFactorIcon(factor.impact)}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground">{factor.name}</p>
+            </div>
+            <p className="text-sm font-medium text-foreground">{factor.value}</p>
+          </div>
+        ))}
       </div>
+
+      <p className="text-xs text-muted text-center">
+        Η τελική απόφαση λαμβάνεται από εξουσιοδοτημένο στέλεχος.
+      </p>
     </div>
   );
 }
