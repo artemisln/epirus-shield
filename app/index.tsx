@@ -1,17 +1,25 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { EpirusLogo } from '@/components/EpirusLogo';
-import { HeaderWaves } from '@/components/HeaderWaves';
+import { CardWaves, HeaderWaves } from '@/components/HeaderWaves';
 import { ShieldBanner } from '@/components/ShieldBanner';
 import { colors } from '@/lib/colors';
 import { formatEuro } from '@/lib/format';
 import { useCallDetection } from '@/providers/CallDetectionProvider';
 
 const TOTAL_BALANCE = 12224.65;
+const ACCOUNT_CARD_WIDTH = 256;
 
 const ACCOUNTS = [
   { id: 'a1', name: 'Basic account', number: '123/123456-78', balance: 10319.54 },
@@ -83,19 +91,25 @@ function AccountCard({
 }) {
   return (
     <View
-      className="mr-3 w-60 rounded-2xl bg-surface p-4"
+      className="mr-3 overflow-hidden rounded-[14px] bg-surface"
       style={{
+        width: ACCOUNT_CARD_WIDTH,
         shadowColor: '#243B72',
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.12,
         shadowRadius: 10,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 2,
+        shadowOffset: { width: 0, height: 5 },
+        elevation: 3,
       }}>
-      <Text className="font-sans-semibold text-base text-primary">{name}</Text>
-      <Text className="mb-3 text-xs text-muted">{number}</Text>
-      <Text className="font-sans-bold text-xl text-foreground">
-        {formatEuro(balance)}€
-      </Text>
+      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+        <CardWaves width={ACCOUNT_CARD_WIDTH} height={70} />
+      </View>
+      <View className="p-4">
+        <Text className="font-sans-semibold text-base text-primary">{name}</Text>
+        <Text className="mb-4 text-xs text-muted">{number}</Text>
+        <Text className="font-sans-bold text-xl text-foreground">
+          {formatEuro(balance)}€
+        </Text>
+      </View>
     </View>
   );
 }
@@ -115,7 +129,7 @@ function ActionRow({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      className="mb-3 flex-row items-center rounded-2xl bg-surface p-4 active:opacity-90"
+      className="mb-3 flex-row items-center rounded-[20px] bg-surface p-4 active:opacity-90"
       style={{
         shadowColor: '#243B72',
         shadowOpacity: 0.08,
@@ -221,7 +235,9 @@ function NavItem({
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
+  const { width: screenWidth } = useWindowDimensions();
   const { isCallActive } = useCallDetection();
+  const [headerHeight, setHeaderHeight] = useState(0);
   const [whole, cents] = formatEuro(TOTAL_BALANCE).split(',');
 
   return (
@@ -235,35 +251,36 @@ export default function DashboardScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}>
         {/* Navy wave header */}
         <View
-          className="overflow-hidden pb-12"
-          style={{ paddingTop: (isCallActive ? 0 : insets.top) + 14 }}>
-          <HeaderWaves />
-          <View className="px-5">
-            <View className="mb-5 flex-row items-center justify-between">
-              <EpirusLogo width={100} variant="white" />
-              <Pressable
-                accessibilityLabel="Ανανέωση"
-                accessibilityRole="button"
-                className="h-9 w-9 items-center justify-center rounded-full bg-white/15">
-                <Ionicons name="refresh" size={18} color="#ffffff" />
-              </Pressable>
+          className="overflow-hidden bg-primary"
+          onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
+          style={{ paddingTop: (isCallActive ? 0 : insets.top) + 16 }}>
+          {headerHeight > 0 ? (
+            <View style={StyleSheet.absoluteFill}>
+              <HeaderWaves width={screenWidth} height={headerHeight} />
             </View>
-            <View className="flex-row items-end">
+          ) : null}
+
+          <View className="flex-row items-start justify-between px-5 pb-16">
+            <View className="flex-1 pr-3">
               <Text className="font-sans-bold text-5xl text-primary-foreground">
                 {whole}
+                <Text className="text-2xl">,{cents}€</Text>
               </Text>
-              <Text className="mb-1.5 font-sans-bold text-2xl text-primary-foreground">
-                ,{cents}€
+              <Text className="mt-1 text-sm text-primary-foreground/70">
+                Συνολικό διαθέσιμο υπόλοιπο
               </Text>
             </View>
-            <Text className="mt-1 text-sm text-primary-foreground/75">
-              Συνολικό διαθέσιμο υπόλοιπο
-            </Text>
+            <Pressable
+              accessibilityLabel="Ανανέωση"
+              accessibilityRole="button"
+              className="mt-1.5 h-9 w-9 items-center justify-center rounded-full bg-white/15">
+              <Ionicons name="refresh" size={18} color="#ffffff" />
+            </Pressable>
           </View>
         </View>
 
         {/* Accounts */}
-        <View className="-mt-6">
+        <View className="-mt-8">
           <Text className="mb-3 px-5 font-sans-bold text-lg text-foreground">
             Λογαριασμοί ({ACCOUNTS.length})
           </Text>
@@ -298,7 +315,7 @@ export default function DashboardScreen() {
             Πρόσφατες συναλλαγές
           </Text>
           <View
-            className="rounded-2xl bg-surface"
+            className="overflow-hidden rounded-[14px] bg-surface"
             style={{
               shadowColor: '#243B72',
               shadowOpacity: 0.08,
