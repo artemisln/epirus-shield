@@ -1,6 +1,6 @@
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost";
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "link";
 type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -10,10 +10,19 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
-  secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-sm",
-  outline: "border-2 border-primary text-primary hover:bg-primary/10",
-  ghost: "text-primary hover:bg-primary/10",
+  primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+  secondary: "bg-foreground text-background hover:bg-foreground/90",
+  outline: "border-2 border-foreground text-foreground hover:bg-surface-elevated",
+  ghost: "text-foreground hover:bg-surface-elevated",
+  link: "text-foreground underline-offset-4 hover:underline",
+};
+
+const disabledClasses: Record<ButtonVariant, string> = {
+  primary: "disabled:bg-muted-light disabled:text-muted disabled:cursor-not-allowed",
+  secondary: "disabled:bg-muted-light disabled:text-muted disabled:cursor-not-allowed",
+  outline: "disabled:border-muted-light disabled:text-muted disabled:cursor-not-allowed",
+  ghost: "disabled:text-muted disabled:cursor-not-allowed",
+  link: "disabled:text-muted disabled:cursor-not-allowed disabled:no-underline",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -36,13 +45,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseClasses =
-      "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+      "inline-flex items-center justify-center font-semibold rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2";
 
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+        className={`${baseClasses} ${variantClasses[variant]} ${disabledClasses[variant]} ${sizeClasses[size]} ${className}`}
         {...props}
       >
         {isLoading && (
