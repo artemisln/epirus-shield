@@ -23,7 +23,7 @@ export function OptionCard({
       onClick={onClick}
       className={`
         w-full text-left bg-surface rounded-xl p-6 transition-all duration-200
-        border-2
+        border-2 cursor-pointer
         ${selected 
           ? "border-foreground" 
           : "border-border hover:bg-surface-elevated hover:border-muted"
