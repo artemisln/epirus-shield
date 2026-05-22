@@ -12,8 +12,20 @@ struct CallDirectoryEntryRecord: Record {
   @Field var label: String = ""
 }
 
+/// CXCallObserverDelegate inherits from NSObjectProtocol, so the delegate must
+/// be an NSObject. Expo's `Module` is not one, so observation is delegated to
+/// this small helper that forwards changes back to the module.
+class CallObserverDelegate: NSObject, CXCallObserverDelegate {
+  var onCallChanged: (() -> Void)?
+
+  func callObserver(_ callObserver: CXCallObserver, callChanged call: CXCall) {
+    onCallChanged?()
+  }
+}
+
 public class CallDetectorModule: Module {
   private var callObserver: CXCallObserver?
+  private let observerDelegate = CallObserverDelegate()
 
   // The Call Directory extension's bundle id is the main app id + ".CallDirectory".
   private var callDirectoryExtensionId: String {
@@ -32,8 +44,11 @@ public class CallDetectorModule: Module {
     OnStartObserving {
       DispatchQueue.main.async {
         guard self.callObserver == nil else { return }
+        self.observerDelegate.onCallChanged = { [weak self] in
+          self?.emitCallState()
+        }
         let observer = CXCallObserver()
-        observer.setDelegate(self, queue: nil)
+        observer.setDelegate(self.observerDelegate, queue: nil)
         self.callObserver = observer
       }
     }
@@ -110,13 +125,5 @@ public class CallDetectorModule: Module {
   fileprivate func emitCallState() {
     let active = self.callObserver?.calls.contains { !$0.hasEnded } ?? false
     self.sendEvent("onCallStateChange", ["state": active ? "active" : "idle"])
-  }
-}
-
-extension CallDetectorModule: CXCallObserverDelegate {
-  public func callObserver(
-    _ callObserver: CXCallObserver, callChanged call: CXCall
-  ) {
-    self.emitCallState()
   }
 }
