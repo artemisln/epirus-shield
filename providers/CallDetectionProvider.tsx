@@ -69,6 +69,8 @@ export function CallDetectionProvider({ children }: { children: ReactNode }) {
   // ask whether a call is already in progress (the onCallStateChange listener
   // above only catches calls that *start* while the app is open).
   useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
     const checkForOngoingCall = () => {
       try {
         if (CallDetector.isCallActive()) {
@@ -79,13 +81,24 @@ export function CallDetectionProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    checkForOngoingCall();
+    // Check immediately, then retry briefly in case the native call observer
+    // is still settling right after launch / foreground.
+    const runChecks = () => {
+      checkForOngoingCall();
+      timers.push(setTimeout(checkForOngoingCall, 700));
+      timers.push(setTimeout(checkForOngoingCall, 2000));
+    };
+
+    runChecks();
     const subscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
-        checkForOngoingCall();
+        runChecks();
       }
     });
-    return () => subscription.remove();
+    return () => {
+      subscription.remove();
+      timers.forEach(clearTimeout);
+    };
   }, []);
 
   // React to entering the SCAM state — from native detection or demo controls.

@@ -38,10 +38,11 @@ public class CallDetectorModule: Module {
     Events("onCallStateChange")
 
     // ---- Layer B: foreground call observation ----
-    // CXCallObserver reports call activity only while this app's process is
-    // alive. iOS does not wake a suspended/terminated app for an incoming call.
-
-    OnStartObserving {
+    // Create the CXCallObserver eagerly at app startup so a call that is
+    // already in progress when the user opens the app is detectable straight
+    // away (isCallActive). CXCallObserver still only works while the app is
+    // alive — iOS does not wake a suspended app for an incoming call.
+    OnCreate {
       DispatchQueue.main.async {
         guard self.callObserver == nil else { return }
         self.observerDelegate.onCallChanged = { [weak self] in
@@ -53,13 +54,7 @@ public class CallDetectorModule: Module {
       }
     }
 
-    OnStopObserving {
-      DispatchQueue.main.async {
-        self.callObserver?.setDelegate(nil, queue: nil)
-        self.callObserver = nil
-      }
-    }
-
+    // Synchronous snapshot of whether a call is currently in progress.
     Function("isCallActive") { () -> Bool in
       return self.callObserver?.calls.contains { !$0.hasEnded } ?? false
     }
