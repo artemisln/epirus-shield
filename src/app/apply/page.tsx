@@ -3,9 +3,12 @@
 import { useState, useCallback } from "react";
 import { WizardShell } from "@/app/components/wizard";
 import { StepTransition } from "@/app/components/wizard";
+import { Button } from "@/app/components/ui";
 import {
   WelcomeStep,
-  LoanDetailsStep,
+  LoanAmountStep,
+  LoanTermStep,
+  LoanPurposeStep,
   DocumentUploadStep,
   ProcessingStep,
   ResultStep,
@@ -13,6 +16,7 @@ import {
 import {
   LoanApplication,
   LoanDetails,
+  LoanPurpose,
   Assessment,
   createLoanApplication,
   updateLoanApplication,
@@ -24,19 +28,15 @@ import { getFullSampleDocuments, sampleExplanationApprove } from "@/infrastructu
 
 const WIZARD_STEPS = [
   { id: "welcome", title: "Καλωσόρισμα" },
-  { id: "details", title: "Στοιχεία" },
+  { id: "amount", title: "Ποσό" },
+  { id: "term", title: "Διάρκεια" },
+  { id: "purpose", title: "Σκοπός" },
   { id: "documents", title: "Έγγραφα" },
   { id: "processing", title: "Επεξεργασία" },
   { id: "result", title: "Αποτέλεσμα" },
 ];
 
-const VOICE_PROMPTS: Record<string, string> = {
-  welcome: "Καλώς ήρθατε στην υπηρεσία Δάνειο σε 5 Λεπτά.",
-  details: "Επιλέξτε το ποσό και τη διάρκεια του δανείου.",
-  documents: "Ανεβάστε τα απαραίτητα έγγραφα.",
-  processing: "Επεξεργαζόμαστε την αίτησή σας.",
-  result: "Η αξιολόγηση ολοκληρώθηκε.",
-};
+const USER_DECISION_STEPS = 5;
 
 interface UploadedFile {
   file: File;
@@ -47,11 +47,15 @@ interface UploadedFile {
 export default function ApplyPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [application, setApplication] = useState<LoanApplication>(createLoanApplication());
+  const [loanAmount, setLoanAmount] = useState(10000);
+  const [loanTerm, setLoanTerm] = useState(36);
+  const [loanPurpose, setLoanPurpose] = useState<LoanPurpose>(LoanPurpose.CONSUMER);
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [explanation, setExplanation] = useState<string>("");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
 
   const currentStepId = WIZARD_STEPS[currentStep].id;
+  const showProgress = currentStep < USER_DECISION_STEPS;
 
   const handleNext = useCallback(() => {
     setCurrentStep((s) => Math.min(s + 1, WIZARD_STEPS.length - 1));
@@ -61,10 +65,26 @@ export default function ApplyPage() {
     setCurrentStep((s) => Math.max(s - 1, 0));
   }, []);
 
-  const handleLoanDetails = useCallback((details: LoanDetails) => {
-    setApplication((app) => updateLoanApplication(app, { loanDetails: details }));
+  const handleAmountNext = useCallback((amount: number) => {
+    setLoanAmount(amount);
     handleNext();
   }, [handleNext]);
+
+  const handleTermSelect = useCallback((term: number) => {
+    setLoanTerm(term);
+    handleNext();
+  }, [handleNext]);
+
+  const handlePurposeSelect = useCallback((purpose: LoanPurpose) => {
+    setLoanPurpose(purpose);
+    const details: LoanDetails = {
+      amount: loanAmount,
+      termMonths: loanTerm,
+      purpose,
+    };
+    setApplication((app) => updateLoanApplication(app, { loanDetails: details }));
+    handleNext();
+  }, [handleNext, loanAmount, loanTerm]);
 
   const handleDocumentsSubmit = useCallback(async (files: UploadedFile[]) => {
     setUploadedFiles(files);
@@ -191,6 +211,9 @@ export default function ApplyPage() {
   const handleClose = useCallback(() => {
     setCurrentStep(0);
     setApplication(createLoanApplication());
+    setLoanAmount(10000);
+    setLoanTerm(36);
+    setLoanPurpose(LoanPurpose.CONSUMER);
     setAssessment(null);
     setExplanation("");
     setUploadedFiles([]);
@@ -200,27 +223,52 @@ export default function ApplyPage() {
     alert("Ένας σύμβουλος θα επικοινωνήσει μαζί σας σύντομα.");
   }, []);
 
+  const renderFooter = () => {
+    if (currentStepId === "term" || currentStepId === "purpose") {
+      return null;
+    }
+
+    if (currentStepId === "processing" || currentStepId === "result") {
+      return null;
+    }
+
+    return null;
+  };
+
   return (
     <WizardShell
-      steps={WIZARD_STEPS}
-      currentStep={currentStep}
-      voicePrompt={VOICE_PROMPTS[currentStepId]}
+      totalSteps={USER_DECISION_STEPS}
+      currentStep={Math.min(currentStep, USER_DECISION_STEPS - 1)}
+      showProgress={showProgress}
+      onBack={handleBack}
+      showBackButton={currentStep > 0 && currentStep < WIZARD_STEPS.length - 2}
+      footer={renderFooter()}
     >
       <StepTransition stepKey={currentStep}>
         {currentStepId === "welcome" && <WelcomeStep onNext={handleNext} />}
 
-        {currentStepId === "details" && (
-          <LoanDetailsStep
-            initialData={application.loanDetails || undefined}
-            onNext={handleLoanDetails}
-            onBack={handleBack}
+        {currentStepId === "amount" && (
+          <LoanAmountStep
+            initialAmount={loanAmount}
+            onNext={handleAmountNext}
           />
+        )}
+
+        {currentStepId === "term" && (
+          <LoanTermStep
+            initialTerm={loanTerm}
+            amount={loanAmount}
+            onSelect={handleTermSelect}
+          />
+        )}
+
+        {currentStepId === "purpose" && (
+          <LoanPurposeStep onSelect={handlePurposeSelect} />
         )}
 
         {currentStepId === "documents" && (
           <DocumentUploadStep
             onNext={handleDocumentsSubmit}
-            onBack={handleBack}
             onUseSampleData={handleUseSampleData}
           />
         )}
@@ -248,22 +296,22 @@ function createMockAssessment(): Assessment {
     score: 75,
     factors: [
       {
-        name: "Μηνιαίο Εισόδημα",
-        value: "€1.650",
+        name: "Εισόδημα",
+        value: "Επαρκές",
         impact: "positive",
         description: "Επιβεβαιωμένο από φορολογικά έγγραφα",
       },
       {
-        name: "Δείκτης Χρέους/Εισοδήματος",
-        value: "28.5%",
+        name: "Δείκτης χρέους",
+        value: "28%",
         impact: "positive",
-        description: "Υγιής αναλογία χρέους προς εισόδημα",
+        description: "Υγιής αναλογία",
       },
       {
-        name: "Μηνιαία Δόση",
-        value: "€312.50",
+        name: "Μηνιαία δόση",
+        value: "€312",
         impact: "positive",
-        description: "Εκτιμώμενη δόση για 36 μήνες",
+        description: "Εντός δυνατοτήτων",
       },
     ],
     debtToIncomeRatio: 0.285,
