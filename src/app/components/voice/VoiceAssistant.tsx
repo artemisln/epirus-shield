@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useVoiceAssistant } from "@/app/hooks/useVoiceAssistant";
 
 interface VoiceAssistantProps {
@@ -14,6 +14,7 @@ export function VoiceAssistant({
   autoSpeak = false,
   className = "",
 }: VoiceAssistantProps) {
+  const [mounted, setMounted] = useState(false);
   const {
     isSpeaking,
     speak,
@@ -22,15 +23,19 @@ export function VoiceAssistant({
   } = useVoiceAssistant({});
 
   useEffect(() => {
-    if (autoSpeak && prompt && isSpeechSupported) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && autoSpeak && prompt && isSpeechSupported) {
       const timer = setTimeout(() => {
         speak(prompt);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [autoSpeak, prompt, speak, isSpeechSupported]);
+  }, [mounted, autoSpeak, prompt, speak, isSpeechSupported]);
 
-  if (!isSpeechSupported) {
+  if (!mounted || !isSpeechSupported) {
     return null;
   }
 
@@ -39,7 +44,7 @@ export function VoiceAssistant({
       type="button"
       onClick={() => (isSpeaking ? stopSpeaking() : prompt && speak(prompt))}
       className={`
-        w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200
+        w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 cursor-pointer
         ${isSpeaking
           ? "bg-foreground text-background"
           : "bg-surface-elevated text-muted hover:text-foreground hover:bg-muted-light"

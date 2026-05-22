@@ -57,6 +57,13 @@ export function DocumentUploadStep({ onFilesChange, onUseSampleData }: DocumentU
     updateFiles(newFiles);
   };
 
+  const handleCardClick = (type: DocumentType, uploaded: boolean) => {
+    setSelectedType(type);
+    if (!uploaded) {
+      fileInputRef.current?.click();
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex justify-center mb-6">
@@ -76,17 +83,10 @@ export function DocumentUploadStep({ onFilesChange, onUseSampleData }: DocumentU
           const isSelected = selectedType === type;
 
           return (
-            <button
+            <div
               key={type}
-              type="button"
-              onClick={() => {
-                setSelectedType(type);
-                if (!uploaded) {
-                  fileInputRef.current?.click();
-                }
-              }}
               className={`
-                w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left cursor-pointer
+                w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all
                 ${uploaded
                   ? "border-success bg-success/5"
                   : isSelected
@@ -95,33 +95,43 @@ export function DocumentUploadStep({ onFilesChange, onUseSampleData }: DocumentU
                 }
               `}
             >
-              <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
-                {uploaded ? (
-                  <div className="w-10 h-10 rounded-full bg-success text-white flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                ) : (
-                  <Icon name="tax-doc" size={48} />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground">
-                  {DocumentTypeShortLabels[type]}
-                </p>
-                <p className="text-sm text-muted truncate">
-                  {uploaded ? uploaded.file.name : "Πατήστε για ανέβασμα"}
-                </p>
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => handleCardClick(type, !!uploaded)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleCardClick(type, !!uploaded);
+                  }
+                }}
+                className="flex items-center gap-4 flex-1 min-w-0 cursor-pointer"
+              >
+                <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                  {uploaded ? (
+                    <div className="w-10 h-10 rounded-full bg-success text-white flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                        <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  ) : (
+                    <Icon name="tax-doc" size={48} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="font-medium text-foreground">
+                    {DocumentTypeShortLabels[type]}
+                  </p>
+                  <p className="text-sm text-muted truncate">
+                    {uploaded ? uploaded.file.name : "Πατήστε για ανέβασμα"}
+                  </p>
+                </div>
               </div>
               {uploaded && (
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveFile(type);
-                  }}
-                  className="p-2 text-muted hover:text-error rounded-full hover:bg-surface-elevated cursor-pointer"
+                  onClick={() => handleRemoveFile(type)}
+                  className="p-2 text-muted hover:text-error rounded-full hover:bg-surface-elevated cursor-pointer flex-shrink-0"
                   aria-label="Αφαίρεση"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
@@ -129,7 +139,7 @@ export function DocumentUploadStep({ onFilesChange, onUseSampleData }: DocumentU
                   </svg>
                 </button>
               )}
-            </button>
+            </div>
           );
         })}
       </div>

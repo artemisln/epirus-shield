@@ -47,7 +47,7 @@ export function Icon({ name, size = 64, className = "", alt }: IconProps) {
       width={size}
       height={size}
       className={className}
-      style={{ objectFit: "contain" }}
+      style={{ width: size, height: "auto", objectFit: "contain" }}
     />
   );
 }
