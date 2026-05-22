@@ -1,127 +1,90 @@
 "use client";
 
 import { ReactNode } from "react";
-import { ProgressBar } from "@/app/components/ui";
-import { VoiceAssistant } from "@/app/components/voice";
-
-interface WizardStep {
-  id: string;
-  title: string;
-}
+import { SegmentedProgress } from "@/app/components/ui";
 
 interface WizardShellProps {
-  steps: WizardStep[];
+  totalSteps: number;
   currentStep: number;
   children: ReactNode;
-  voicePrompt?: string;
-  showVoice?: boolean;
+  showProgress?: boolean;
+  onBack?: () => void;
+  showBackButton?: boolean;
+  footer?: ReactNode;
 }
 
 export function WizardShell({
-  steps,
+  totalSteps,
   currentStep,
   children,
-  voicePrompt,
-  showVoice = true,
+  showProgress = true,
+  onBack,
+  showBackButton = true,
+  footer,
 }: WizardShellProps) {
-  const progress = ((currentStep + 1) / steps.length) * 100;
+  const canGoBack = currentStep > 0 && showBackButton;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <header className="sticky top-0 z-10 bg-primary text-primary-foreground shadow-md">
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-10 bg-background border-b border-border">
+        <div className="max-w-lg mx-auto px-6 py-4 flex items-center justify-between">
+          {canGoBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-muted transition-colors"
+              aria-label="Πίσω"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
+                viewBox="0 0 20 20"
                 fill="currentColor"
-                className="w-8 h-8"
+                className="w-5 h-5"
                 aria-hidden="true"
               >
-                <path d="M11.584 2.376a.75.75 0 01.832 0l9 6a.75.75 0 11-.832 1.248L12 3.901 3.416 9.624a.75.75 0 01-.832-1.248l9-6z" />
                 <path
                   fillRule="evenodd"
-                  d="M20.25 10.332v9.918H21a.75.75 0 010 1.5H3a.75.75 0 010-1.5h.75v-9.918a.75.75 0 01.634-.74A49.109 49.109 0 0112 9c2.59 0 5.134.202 7.616.592a.75.75 0 01.634.74zm-7.5 2.418a.75.75 0 00-1.5 0v6.75a.75.75 0 001.5 0v-6.75zm3-.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0v-6.75a.75.75 0 01.75-.75zM9 12.75a.75.75 0 00-1.5 0v6.75a.75.75 0 001.5 0v-6.75z"
+                  d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z"
                   clipRule="evenodd"
                 />
               </svg>
-              <div>
-                <h1 className="text-lg font-bold">Epirus Bank</h1>
-                <p className="text-xs opacity-80">Δάνειο σε 5 Λεπτά</p>
-              </div>
-            </div>
-            {showVoice && (
-              <VoiceAssistant
-                prompt={voicePrompt}
-                autoSpeak={false}
-                showMicButton={false}
-              />
-            )}
-          </div>
-          <ProgressBar progress={progress} size="sm" />
+              <span className="hidden sm:inline">Πίσω</span>
+            </button>
+          ) : (
+            <div className="w-16" />
+          )}
+
+          <span className="text-sm font-medium text-muted">
+            Epirus Bank
+          </span>
+
+          <div className="w-16" />
         </div>
       </header>
 
-      <nav className="bg-surface border-b border-border" aria-label="Βήματα αίτησης">
-        <div className="max-w-2xl mx-auto px-4">
-          <ol className="flex overflow-x-auto py-2 gap-1 text-xs">
-            {steps.map((step, index) => {
-              const isActive = index === currentStep;
-              const isCompleted = index < currentStep;
-
-              return (
-                <li
-                  key={step.id}
-                  className={`
-                    flex items-center gap-1 px-2 py-1 rounded whitespace-nowrap
-                    ${isActive ? "bg-primary/10 text-primary font-medium" : ""}
-                    ${isCompleted ? "text-success" : ""}
-                    ${!isActive && !isCompleted ? "text-muted" : ""}
-                  `}
-                  aria-current={isActive ? "step" : undefined}
-                >
-                  <span
-                    className={`
-                      flex items-center justify-center w-5 h-5 rounded-full text-xs
-                      ${isActive ? "bg-primary text-primary-foreground" : ""}
-                      ${isCompleted ? "bg-success text-white" : ""}
-                      ${!isActive && !isCompleted ? "bg-surface-elevated" : ""}
-                    `}
-                  >
-                    {isCompleted ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className="w-3 h-3"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    ) : (
-                      index + 1
-                    )}
-                  </span>
-                  <span className="hidden sm:inline">{step.title}</span>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-      </nav>
-
       <main className="flex-1 flex flex-col">
-        <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-6">{children}</div>
+        <div className="flex-1 max-w-lg mx-auto w-full px-6 py-8 sm:py-12">
+          {children}
+        </div>
       </main>
 
-      <footer className="bg-surface border-t border-border py-3 text-center text-xs text-muted">
-        <p>&copy; 2024 Epirus Bank. Με επιφύλαξη παντός δικαιώματος.</p>
-      </footer>
+      {(showProgress || footer) && (
+        <footer className="sticky bottom-0 bg-background border-t border-border">
+          <div className="max-w-lg mx-auto px-6 py-4 space-y-4">
+            {showProgress && (
+              <SegmentedProgress
+                totalSteps={totalSteps}
+                currentStep={currentStep}
+              />
+            )}
+            {footer && (
+              <div className="flex items-center justify-between">
+                {footer}
+              </div>
+            )}
+          </div>
+        </footer>
+      )}
     </div>
   );
 }
