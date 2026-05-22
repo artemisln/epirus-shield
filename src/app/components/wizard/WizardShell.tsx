@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import Image from "next/image";
 import { SegmentedProgress } from "@/app/components/ui";
 
 interface WizardShellProps {
@@ -65,9 +66,13 @@ export function WizardShell({
             <div className="w-16" />
           )}
 
-          <span className="text-sm font-medium text-muted">
-            Epirus Bank
-          </span>
+          <Image
+            src="/epirus_bank_logo.svg"
+            alt="Epirus Bank"
+            width={120}
+            height={14}
+            priority
+          />
 
           <div className="w-16" />
         </div>
