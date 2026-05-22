@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { AppState } from 'react-native';
 
 import {
   CallContext,
@@ -61,6 +62,29 @@ export function CallDetectionProvider({ children }: { children: ReactNode }) {
         );
       },
     );
+    return () => subscription.remove();
+  }, []);
+
+  // Revolut-style check: when the app is opened or returns to the foreground,
+  // ask whether a call is already in progress (the onCallStateChange listener
+  // above only catches calls that *start* while the app is open).
+  useEffect(() => {
+    const checkForOngoingCall = () => {
+      try {
+        if (CallDetector.isCallActive()) {
+          setCallContext(createScamContext());
+        }
+      } catch {
+        // Native module unavailable (e.g. Expo Go) — ignore.
+      }
+    };
+
+    checkForOngoingCall();
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        checkForOngoingCall();
+      }
+    });
     return () => subscription.remove();
   }, []);
 
