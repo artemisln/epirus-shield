@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Epirus Shield",
+    "name": "EpirusBank",
     "slug": "epirus-shield",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icon.png",
     "scheme": "epirusshield",
     "userInterfaceStyle": "light",
     "ios": {
