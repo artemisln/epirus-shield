@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useAudioPlayer } from 'expo-audio';
+import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -26,6 +27,18 @@ const SAFETY_TIPS = [
 export function WarningOverlay({ callerNumber, onDismiss }: WarningOverlayProps) {
   const [isReporting, setIsReporting] = useState(false);
   const [reported, setReported] = useState(false);
+  const player = useAudioPlayer(require('@/assets/scam-warning.mp3'));
+
+  useEffect(() => {
+    player.seekTo(0);
+    player.play();
+    return () => {
+      player.pause();
+    };
+    // The player instance is stable for a given source — listing it as a
+    // dependency would cause unnecessary replays.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleReport = async () => {
     setIsReporting(true);
@@ -37,6 +50,14 @@ export function WarningOverlay({ callerNumber, onDismiss }: WarningOverlayProps)
     } finally {
       setIsReporting(false);
     }
+  };
+
+  const handleTrust = () => {
+    Alert.alert(
+      'Προστέθηκε στους έμπιστους',
+      `Ο αριθμός ${callerNumber ?? '(άγνωστος)'} προστέθηκε στις έμπιστες επαφές σας.`,
+      [{ text: 'Εντάξει', onPress: onDismiss }],
+    );
   };
 
   return (
@@ -115,9 +136,28 @@ export function WarningOverlay({ callerNumber, onDismiss }: WarningOverlayProps)
                   Κλείστε αμέσως το τηλέφωνο
                 </Text>
               </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                onPress={handleTrust}
+                className="items-center rounded-full border border-white/20 py-3 active:opacity-90">
+                <Text className="font-sans-medium text-sm text-secondary-foreground/85">
+                  Εμπιστεύομαι αυτόν τον αριθμό
+                </Text>
+              </Pressable>
             </View>
           </View>
         </ScrollView>
+
+        {/* Top-right close button */}
+        <Pressable
+          accessibilityLabel="Κλείσιμο"
+          accessibilityRole="button"
+          onPress={onDismiss}
+          className="absolute right-4 top-4 h-10 w-10 items-center justify-center rounded-full active:bg-white/15"
+          style={{ zIndex: 10 }}>
+          <Ionicons name="close" size={28} color="#ffffff" />
+        </Pressable>
       </SafeAreaView>
     </View>
   );
