@@ -130,18 +130,9 @@ export function WarningOverlay({ callerNumber, onDismiss }: WarningOverlayProps)
 
               <Pressable
                 accessibilityRole="button"
-                onPress={onDismiss}
-                className="items-center rounded-full border border-white/40 py-4 active:opacity-90">
-                <Text className="font-sans-semibold text-base text-secondary-foreground">
-                  Κλείστε αμέσως το τηλέφωνο
-                </Text>
-              </Pressable>
-
-              <Pressable
-                accessibilityRole="button"
                 onPress={handleTrust}
-                className="items-center rounded-full border border-white/20 py-3 active:opacity-90">
-                <Text className="font-sans-medium text-sm text-secondary-foreground/85">
+                className="items-center rounded-full border border-white/40 py-4 active:opacity-90">
+                <Text className="font-sans-medium text-base text-secondary-foreground">
                   Εμπιστεύομαι αυτόν τον αριθμό
                 </Text>
               </Pressable>
