@@ -2,7 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAudioPlayer } from 'expo-audio';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import { EpirusLogo } from '@/components/EpirusLogo';
 import { addScamReport } from '@/lib/reports';
@@ -27,6 +30,7 @@ const SAFETY_TIPS = [
 export function WarningOverlay({ callerNumber, onDismiss }: WarningOverlayProps) {
   const [isReporting, setIsReporting] = useState(false);
   const [reported, setReported] = useState(false);
+  const insets = useSafeAreaInsets();
   const player = useAudioPlayer(require('@/assets/scam-warning.mp3'));
 
   useEffect(() => {
@@ -146,8 +150,8 @@ export function WarningOverlay({ callerNumber, onDismiss }: WarningOverlayProps)
           accessibilityLabel="Κλείσιμο"
           accessibilityRole="button"
           onPress={onDismiss}
-          className="absolute right-4 top-4 h-10 w-10 items-center justify-center rounded-full active:bg-white/15"
-          style={{ zIndex: 10 }}>
+          className="absolute h-10 w-10 items-center justify-center rounded-full active:bg-white/15"
+          style={{ top: insets.top + 8, right: 16, zIndex: 10 }}>
           <Ionicons name="close" size={28} color="#ffffff" />
         </Pressable>
       </SafeAreaView>
