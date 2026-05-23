@@ -10,6 +10,7 @@
     "ios": {
       "bundleIdentifier": "com.epirusbank.shield",
       "appleTeamId": "JDHGY38643",
+      "buildNumber": "1",
       "supportsTablet": false,
       "entitlements": {
         "com.apple.security.application-groups": [
