@@ -70,18 +70,17 @@ function injectWarning(msgEl, senderEmail, domain) {
   banner.innerHTML = `
     <div class="epirus-shield-warning-icon">⚠</div>
     <div class="epirus-shield-warning-body">
-      <div class="epirus-shield-warning-title">Πιθανή απάτη — Epirus Shield</div>
+      <div class="epirus-shield-warning-title">Πιθανή απάτη</div>
       <div class="epirus-shield-warning-text">
         Αυτό το email αναφέρει την <strong>Epirus Bank</strong>, αλλά ο αποστολέας
         <code class="epirus-shield-sender"></code> δεν προέρχεται από επίσημο
-        domain της τράπεζας (<code class="epirus-shield-domain"></code>).
-        Μην κάνετε κλικ σε συνδέσμους και μη δίνετε ποτέ κωδικούς ή στοιχεία κάρτας.
+        domain της τράπεζας. Μην κάνετε κλικ σε συνδέσμους και μη δίνετε ποτέ
+        κωδικούς ή στοιχεία κάρτας.
       </div>
     </div>
     <button class="epirus-shield-warning-close" type="button" aria-label="Κλείσιμο">×</button>
   `;
   banner.querySelector('.epirus-shield-sender').textContent = senderEmail;
-  banner.querySelector('.epirus-shield-domain').textContent = domain;
   banner
     .querySelector('.epirus-shield-warning-close')
     .addEventListener('click', () => banner.remove());
