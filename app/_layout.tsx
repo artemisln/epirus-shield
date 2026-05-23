@@ -1,3 +1,4 @@
+import '@/lib/polyfills';
 import '@/global.css';
 
 import {
@@ -9,8 +10,11 @@ import {
 } from '@expo-google-fonts/manrope';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { CallDetectionProvider } from '@/providers/CallDetectionProvider';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -33,9 +37,24 @@ export default function RootLayout() {
   }
 
   return (
-    <>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }} />
-    </>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <CallDetectionProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="transfer" />
+            <Stack.Screen name="settings" />
+            <Stack.Screen
+              name="warning"
+              options={{
+                presentation: 'fullScreenModal',
+                gestureEnabled: false,
+                animation: 'fade',
+              }}
+            />
+          </Stack>
+        </CallDetectionProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
