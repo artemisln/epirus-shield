@@ -30,13 +30,14 @@ export function WarningOverlay({ callerNumber, onDismiss }: WarningOverlayProps)
   const player = useAudioPlayer(require('@/assets/scam-warning.mp3'));
 
   useEffect(() => {
-    player.seekTo(0);
-    player.play();
-    return () => {
-      player.pause();
-    };
-    // The player instance is stable for a given source — listing it as a
-    // dependency would cause unnecessary replays.
+    // `useAudioPlayer` releases the native player on unmount automatically;
+    // calling pause() in a cleanup races with that release and throws.
+    try {
+      player.seekTo(0);
+      player.play();
+    } catch {
+      // player not ready yet
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
