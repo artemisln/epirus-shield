@@ -1,61 +1,83 @@
-/* Epirus Shield - Badge Styles */
-/* Uses Epirus Bank brand colors */
+/* Epirus Shield — phishing warning banner injected at the top of a suspicious Gmail message. */
 
-.epirus-shield-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  font-size: 11px;
-  font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  margin-left: 8px;
-  vertical-align: middle;
-  white-space: nowrap;
+.epirus-shield-warning-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 0 16px 0;
+  padding: 14px 44px 14px 16px;
+  background: #fff1f1;
+  border: 1px solid #f1c4c4;
+  border-left: 4px solid #bb1616;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Google Sans", "Helvetica Neue", sans-serif;
+  color: #4a0e0e;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(187, 22, 22, 0.08);
+  animation: epirus-shield-banner-in 0.18s ease-out;
 }
 
-.epirus-shield-badge svg {
-  flex-shrink: 0;
-}
-
-/* Verified badge - Epirus Bank primary color */
-.epirus-shield-verified {
-  background-color: rgba(36, 59, 114, 0.1);
-  color: #243B72;
-}
-
-.epirus-shield-verified svg {
-  color: #243B72;
-}
-
-/* Warning badge - Epirus Bank secondary/alert color */
-.epirus-shield-warning {
-  background-color: rgba(187, 22, 22, 0.1);
-  color: #bb1616;
-}
-
-.epirus-shield-warning svg {
-  color: #bb1616;
-}
-
-/* Hover states */
-.epirus-shield-badge:hover {
-  opacity: 0.9;
-}
-
-/* Animation for new badges */
-@keyframes epirus-shield-fade-in {
+@keyframes epirus-shield-banner-in {
   from {
     opacity: 0;
-    transform: translateX(-4px);
+    transform: translateY(-4px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
-.epirus-shield-badge {
-  animation: epirus-shield-fade-in 0.2s ease-out;
+.epirus-shield-warning-icon {
+  font-size: 22px;
+  line-height: 1;
+  color: #bb1616;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.epirus-shield-warning-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.epirus-shield-warning-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #bb1616;
+  margin-bottom: 4px;
+}
+
+.epirus-shield-warning-text {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #4a0e0e;
+}
+
+.epirus-shield-warning-text code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  background: rgba(187, 22, 22, 0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.epirus-shield-warning-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: #bb1616;
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.epirus-shield-warning-close:hover {
+  background: rgba(187, 22, 22, 0.1);
 }
