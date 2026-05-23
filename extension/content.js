@@ -86,7 +86,9 @@ function injectWarning(msgEl, senderEmail, domain) {
     .querySelector('.epirus-shield-warning-close')
     .addEventListener('click', () => banner.remove());
 
-  msgEl.prepend(banner);
+  // Insert as a sibling above the message — prepending inside .adn put it
+  // into Gmail's flex layout as a narrow left column.
+  msgEl.parentNode.insertBefore(banner, msgEl);
 }
 
 function scan() {
