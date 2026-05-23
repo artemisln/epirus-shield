@@ -7,6 +7,6 @@ module.exports = () => ({
   name: 'ShareCheck',
   displayName: 'EpirusBank',
   bundleIdentifier: 'com.epirusbank.shield.ShareCheck',
-  icon: './assets/icon.png',
+  icon: '../../assets/icon.png',
   frameworks: ['UIKit', 'SwiftUI'],
 });
