@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Linking from 'expo-linking';
 import { router, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/Button';
@@ -10,8 +11,16 @@ import { Card } from '@/components/ui/Card';
 import { getSeedVerifiedNumbers } from '@/domain/data';
 import { ScamReport } from '@/domain/verification';
 import { colors } from '@/lib/colors';
+import { getCallDirectoryStatus, syncCallDirectory } from '@/lib/numberSync';
 import { getScamReports } from '@/lib/reports';
+import type { CallDirectoryStatus } from '@/modules/call-detector';
 import { useCallDetection } from '@/providers/CallDetectionProvider';
+
+const STATUS_LABEL: Record<CallDirectoryStatus, string> = {
+  enabled: 'Ενεργό',
+  disabled: 'Ανενεργό',
+  unknown: 'Άγνωστη κατάσταση',
+};
 
 function SectionTitle({ children }: { children: string }) {
   return (
@@ -34,6 +43,9 @@ export default function SettingsScreen() {
   const { simulateVerified, simulateScam, clearCall } = useCallDetection();
   const verifiedNumbers = useMemo(() => getSeedVerifiedNumbers(), []);
   const [reports, setReports] = useState<ScamReport[]>([]);
+  const [directoryStatus, setDirectoryStatus] =
+    useState<CallDirectoryStatus>('unknown');
+  const [syncing, setSyncing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -43,11 +55,42 @@ export default function SettingsScreen() {
           setReports(loaded);
         }
       });
+      getCallDirectoryStatus()
+        .then((status) => {
+          if (active) {
+            setDirectoryStatus(status);
+          }
+        })
+        .catch(() => undefined);
       return () => {
         active = false;
       };
     }, []),
   );
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const count = await syncCallDirectory();
+      const status = await getCallDirectoryStatus().catch(
+        () => 'unknown' as CallDirectoryStatus,
+      );
+      setDirectoryStatus(status);
+      Alert.alert(
+        'Ο κατάλογος ενημερώθηκε',
+        `${count} αριθμοί στάλθηκαν στην αναγνώριση κλήσεων.`,
+      );
+    } catch {
+      Alert.alert(
+        'Σφάλμα συγχρονισμού',
+        'Δοκιμάστε ξανά αφού εγκαταστήσετε την εφαρμογή σε πραγματική συσκευή.',
+      );
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const statusEnabled = directoryStatus === 'enabled';
 
   return (
     <View className="flex-1 bg-[#eceef3]">
@@ -74,6 +117,48 @@ export default function SettingsScreen() {
           padding: 24,
           paddingBottom: insets.bottom + 32,
         }}>
+        <SectionTitle>Προστασία κλήσεων</SectionTitle>
+        <Card className="p-4">
+          <View className="mb-3 flex-row items-center gap-2">
+            <Ionicons
+              name="shield-checkmark"
+              size={22}
+              color={colors.primary}
+            />
+            <Text className="flex-1 font-sans-semibold text-base text-foreground">
+              Αναγνώριση κλήσεων Epirus
+            </Text>
+            <View
+              className={`rounded-full px-2.5 py-1 ${
+                statusEnabled ? 'bg-success/15' : 'bg-muted-light/40'
+              }`}>
+              <Text
+                className={`font-sans-semibold text-xs ${
+                  statusEnabled ? 'text-success' : 'text-muted'
+                }`}>
+                {STATUS_LABEL[directoryStatus]}
+              </Text>
+            </View>
+          </View>
+          <Text className="mb-4 text-sm text-muted">
+            Το Epirus Shield επισημαίνει τους γνήσιους αριθμούς της τράπεζας και
+            τους ύποπτους αριθμούς στην οθόνη κλήσης. Ενεργοποιήστε το από τις
+            Ρυθμίσεις iOS: Τηλέφωνο → Αποκλεισμός & Αναγνώριση κλήσεων.
+          </Text>
+          <View className="gap-3">
+            <Button
+              label="Συγχρονισμός αριθμών"
+              loading={syncing}
+              onPress={handleSync}
+            />
+            <Button
+              label="Άνοιγμα Ρυθμίσεων iOS"
+              variant="outline"
+              onPress={() => Linking.openSettings()}
+            />
+          </View>
+        </Card>
+
         <SectionTitle>Demo κλήσης</SectionTitle>
         <Card className="gap-3 p-4">
           <Text className="text-sm text-muted">
