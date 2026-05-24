@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { AppState } from 'react-native';
 
 import {
   CallContext,
@@ -17,13 +18,14 @@ import {
   createVerifiedContext,
 } from '@/domain/verification';
 import { notifyScamCall, requestNotificationPermission } from '@/lib/notifications';
+import { CallDetector } from '@/modules/call-detector';
 
 interface CallDetectionValue {
   /** The current call state (idle / verified / scam). */
   callContext: CallContext;
   /** True when a call is in progress (verified or scam). */
   isCallActive: boolean;
-  /** Low-level setter — used by the demo controls. */
+  /** Low-level setter — used by the native observer (Layer B) and demo controls. */
   setCallContext: (context: CallContext) => void;
   /** Demo helper: pretend a verified Epirus Bank call is in progress. */
   simulateVerified: (callerNumber?: string, department?: string) => void;
@@ -46,7 +48,60 @@ export function CallDetectionProvider({ children }: { children: ReactNode }) {
     requestNotificationPermission();
   }, []);
 
-  // React to entering the SCAM state — from the demo controls for now.
+  // Layer B — subscribe to the native foreground call observer.
+  // Any active call is treated as a potential scam: Epirus Bank never phones
+  // customers, and CXCallObserver exposes no caller number.
+  useEffect(() => {
+    const subscription = CallDetector.addListener(
+      'onCallStateChange',
+      (event) => {
+        setCallContext(
+          event.state === 'active'
+            ? createScamContext()
+            : createIdleContext(),
+        );
+      },
+    );
+    return () => subscription.remove();
+  }, []);
+
+  // Revolut-style check: when the app is opened or returns to the foreground,
+  // ask whether a call is already in progress (the onCallStateChange listener
+  // above only catches calls that *start* while the app is open).
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    const checkForOngoingCall = () => {
+      try {
+        if (CallDetector.isCallActive()) {
+          setCallContext(createScamContext());
+        }
+      } catch {
+        // Native module unavailable (e.g. Expo Go) — ignore.
+      }
+    };
+
+    // Check immediately, then retry briefly in case the native call observer
+    // is still settling right after launch / foreground.
+    const runChecks = () => {
+      checkForOngoingCall();
+      timers.push(setTimeout(checkForOngoingCall, 700));
+      timers.push(setTimeout(checkForOngoingCall, 2000));
+    };
+
+    runChecks();
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        runChecks();
+      }
+    });
+    return () => {
+      subscription.remove();
+      timers.forEach(clearTimeout);
+    };
+  }, []);
+
+  // React to entering the SCAM state — from native detection or demo controls.
   const previousState = useRef<CallState>(CallState.IDLE);
   useEffect(() => {
     const enteredScam =
