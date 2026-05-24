@@ -9,6 +9,8 @@
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.epirusbank.shield",
+      "appleTeamId": "JDHGY38643",
+      "buildNumber": "1",
       "supportsTablet": false,
       "entitlements": {
         "com.apple.security.application-groups": [
@@ -76,7 +78,8 @@
               ]
             }
           }
-        }
+        },
+        "projectId": "70cccc03-f99f-40f5-ae8d-2c3cc2a99d68"
       }
     }
   }
