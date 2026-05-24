@@ -9,7 +9,15 @@
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.epirusbank.shield",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.epirusbank.shield"
+        ]
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +26,13 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
     },
     "web": {
       "output": "static",
@@ -35,14 +49,35 @@
             "imageWidth": 76
           }
         }
-      ]
+      ],
+      "@bacons/apple-targets",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
     "extra": {
-      "router": {}
+      "router": {},
+      "eas": {
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "bundleIdentifier": "com.epirusbank.shield.CallDirectory",
+                  "targetName": "CallDirectory",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.epirusbank.shield"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
     }
   }
 }
