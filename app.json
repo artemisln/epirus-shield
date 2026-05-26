@@ -16,6 +16,9 @@
         "com.apple.security.application-groups": [
           "group.com.epirusbank.shield"
         ]
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -25,7 +28,13 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
     },
     "web": {
       "output": "static",
@@ -49,6 +58,29 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "bundleIdentifier": "com.epirusbank.shield.CallDirectory",
+                  "targetName": "CallDirectory",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.epirusbank.shield"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "70cccc03-f99f-40f5-ae8d-2c3cc2a99d68"
+      }
     }
   }
 }
