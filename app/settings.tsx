@@ -9,10 +9,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { getSeedVerifiedNumbers } from '@/domain/data';
-import { ScamReport } from '@/domain/verification';
+import { ScamReport, TrustedNumber } from '@/domain/verification';
 import { colors } from '@/lib/colors';
 import { getCallDirectoryStatus, syncCallDirectory } from '@/lib/numberSync';
 import { getScamReports } from '@/lib/reports';
+import { getTrustedNumbers } from '@/lib/trusted';
 import type { CallDirectoryStatus } from '@/modules/call-detector';
 import { useCallDetection } from '@/providers/CallDetectionProvider';
 
@@ -43,6 +44,7 @@ export default function SettingsScreen() {
   const { simulateVerified, simulateScam, clearCall } = useCallDetection();
   const verifiedNumbers = useMemo(() => getSeedVerifiedNumbers(), []);
   const [reports, setReports] = useState<ScamReport[]>([]);
+  const [trustedNumbers, setTrustedNumbers] = useState<TrustedNumber[]>([]);
   const [directoryStatus, setDirectoryStatus] =
     useState<CallDirectoryStatus>('unknown');
   const [syncing, setSyncing] = useState(false);
@@ -53,6 +55,11 @@ export default function SettingsScreen() {
       getScamReports().then((loaded) => {
         if (active) {
           setReports(loaded);
+        }
+      });
+      getTrustedNumbers().then((loaded) => {
+        if (active) {
+          setTrustedNumbers(loaded);
         }
       });
       getCallDirectoryStatus()
@@ -198,6 +205,39 @@ export default function SettingsScreen() {
               </Text>
             </View>
           ))}
+        </Card>
+
+        <SectionTitle>Έμπιστοι αριθμοί</SectionTitle>
+        <Card>
+          {trustedNumbers.length === 0 ? (
+            <View className="p-4">
+              <Text className="text-sm text-muted">
+                Δεν υπάρχουν έμπιστοι αριθμοί ακόμη.
+              </Text>
+            </View>
+          ) : (
+            trustedNumbers.map((entry, index) => (
+              <View
+                key={entry.id}
+                className={`flex-row items-center justify-between p-4 ${
+                  index > 0 ? 'border-t border-border' : ''
+                }`}>
+                <View className="flex-row items-center gap-3">
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={18}
+                    color={colors.success}
+                  />
+                  <Text className="font-sans-medium text-sm text-foreground">
+                    {entry.phone}
+                  </Text>
+                </View>
+                <Text className="text-xs text-muted">
+                  {timeLabel(entry.trustedAt)}
+                </Text>
+              </View>
+            ))
+          )}
         </Card>
 
         <SectionTitle>Αναφορές απάτης</SectionTitle>
