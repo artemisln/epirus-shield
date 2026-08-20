@@ -35,3 +35,10 @@ export type {
 export {
   createScamReport,
 } from "./ScamReport";
+
+export type {
+  TrustedNumber,
+} from "./TrustedNumber";
+export {
+  createTrustedNumber,
+} from "./TrustedNumber";

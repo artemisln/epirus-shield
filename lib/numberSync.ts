@@ -2,6 +2,7 @@ import { getSeedVerifiedNumbers } from '@/domain/data';
 import scamSeed from '@/domain/data/scam-numbers.json';
 import { normalizePhone } from '@/domain/verification';
 import { getScamReports } from '@/lib/reports';
+import { getTrustedNumbers } from '@/lib/trusted';
 import {
   CallDetector,
   type CallDirectoryEntry,
@@ -20,7 +21,9 @@ function toDirectoryNumber(phone: string): number | null {
 
 /**
  * Builds the de-duplicated, ascending number list for the Call Directory:
- * verified Epirus Bank numbers (✓) and known + reported scam numbers (⚠️).
+ * verified Epirus Bank numbers (✓), user-trusted numbers, then known +
+ * reported scam numbers (⚠️). First match wins, so trusted numbers are
+ * never labelled as scam.
  */
 export async function buildCallDirectoryEntries(): Promise<CallDirectoryEntry[]> {
   const byNumber = new Map<number, CallDirectoryEntry>();
@@ -31,6 +34,16 @@ export async function buildCallDirectoryEntries(): Promise<CallDirectoryEntry[]>
       byNumber.set(number, {
         number,
         label: `✓ Epirus Bank — ${verified.department}`,
+      });
+    }
+  }
+
+  for (const trusted of await getTrustedNumbers()) {
+    const number = toDirectoryNumber(trusted.phone);
+    if (number !== null && !byNumber.has(number)) {
+      byNumber.set(number, {
+        number,
+        label: '✓ Έμπιστος αριθμός — Epirus Shield',
       });
     }
   }

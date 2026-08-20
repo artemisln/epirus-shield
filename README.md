@@ -138,8 +138,8 @@ npx eas submit --platform ios --latest
 ## Team
 
 - **Aikaterini Artemis Leonardou** — Full-Stack Engineer
-- **Eleni Zafiri** — Business Operations
-- **Angeliki Diamantopoulou** — Research & CyberSecurity
+- **Eleni Zafeiri** — Business Operations [@elenizafeiri](https://github.com/feirw)
+- **Angeliki Diamantopoulou** — Research & CyberSecurity 
 
 ---
 

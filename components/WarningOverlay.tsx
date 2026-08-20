@@ -8,7 +8,9 @@ import {
 } from 'react-native-safe-area-context';
 
 import { EpirusLogo } from '@/components/EpirusLogo';
+import { syncCallDirectory } from '@/lib/numberSync';
 import { addScamReport } from '@/lib/reports';
+import { addTrustedNumber } from '@/lib/trusted';
 
 interface WarningOverlayProps {
   /** The number of the incoming call, if known. */
@@ -30,6 +32,8 @@ const SAFETY_TIPS = [
 export function WarningOverlay({ callerNumber, onDismiss }: WarningOverlayProps) {
   const [isReporting, setIsReporting] = useState(false);
   const [reported, setReported] = useState(false);
+  const [isTrusting, setIsTrusting] = useState(false);
+  const [trusted, setTrusted] = useState(false);
   const insets = useSafeAreaInsets();
   const player = useAudioPlayer(require('@/assets/scam-warning.mp3'));
 
@@ -57,12 +61,34 @@ export function WarningOverlay({ callerNumber, onDismiss }: WarningOverlayProps)
     }
   };
 
-  const handleTrust = () => {
-    Alert.alert(
-      'Προστέθηκε στους έμπιστους',
-      `Ο αριθμός ${callerNumber ?? '(άγνωστος)'} προστέθηκε στις έμπιστες επαφές σας.`,
-      [{ text: 'Εντάξει', onPress: onDismiss }],
-    );
+  const handleTrust = async () => {
+    if (!callerNumber) {
+      Alert.alert(
+        'Άγνωστος αριθμός',
+        'Η iOS δεν κοινοποιεί τον αριθμό κλήσης σε εφαρμογές τρίτων, οπότε δεν μπορεί να αποθηκευτεί ως έμπιστος.',
+      );
+      return;
+    }
+
+    setIsTrusting(true);
+    try {
+      await addTrustedNumber(callerNumber);
+      try {
+        await syncCallDirectory();
+      } catch {
+        // Number is persisted locally; directory sync can be retried from Settings.
+      }
+      setTrusted(true);
+      Alert.alert(
+        'Προστέθηκε στους έμπιστους',
+        `Ο αριθμός ${callerNumber} αποθηκεύτηκε και δεν θα επισημαίνεται ως απάτη στην οθόνη κλήσης.`,
+        [{ text: 'Εντάξει', onPress: onDismiss }],
+      );
+    } catch {
+      Alert.alert('Σφάλμα', 'Ο αριθμός δεν αποθηκεύτηκε. Δοκιμάστε ξανά.');
+    } finally {
+      setIsTrusting(false);
+    }
   };
 
   return (
@@ -133,14 +159,27 @@ export function WarningOverlay({ callerNumber, onDismiss }: WarningOverlayProps)
                 </Pressable>
               )}
 
-              <Pressable
-                accessibilityRole="button"
-                onPress={handleTrust}
-                className="items-center rounded-full border border-white/40 py-4 active:opacity-90">
-                <Text className="font-sans-medium text-base text-secondary-foreground">
-                  Εμπιστεύομαι αυτόν τον αριθμό
-                </Text>
-              </Pressable>
+              {trusted ? (
+                <View className="items-center rounded-full border border-white/40 py-4">
+                  <Text className="font-sans-medium text-base text-secondary-foreground">
+                    ✓ Προστέθηκε στους έμπιστους
+                  </Text>
+                </View>
+              ) : (
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={isTrusting}
+                  onPress={handleTrust}
+                  className={`items-center rounded-full border border-white/40 py-4 active:opacity-90 ${
+                    isTrusting ? 'opacity-60' : ''
+                  }`}>
+                  <Text className="font-sans-medium text-base text-secondary-foreground">
+                    {isTrusting
+                      ? 'Αποθήκευση…'
+                      : 'Εμπιστεύομαι αυτόν τον αριθμό'}
+                  </Text>
+                </Pressable>
+              )}
             </View>
           </View>
         </ScrollView>
